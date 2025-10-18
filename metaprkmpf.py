@@ -10,7 +10,7 @@ truth discovery, and meta-programming capabilities.
 import re
 import sys
 from typing import List, Dict, Any, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -28,7 +28,7 @@ class Pattern:
     name: str
     regex: str
     truth_level: TruthLevel
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 class UltimateMetaprkmpf:
@@ -54,7 +54,7 @@ class UltimateMetaprkmpf:
             name=name,
             regex=regex,
             truth_level=truth_level,
-            metadata=metadata or {}
+            metadata=metadata if metadata is not None else {}
         )
         self.patterns.append(pattern)
         
@@ -88,20 +88,24 @@ class UltimateMetaprkmpf:
             
         return self.transformations[transformation_name](text)
         
-    def meta_analyze(self, text: str) -> Dict[str, Any]:
+    def meta_analyze(self, text: str, patterns: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Perform meta-analysis on text to discover higher-order patterns"""
+        # Use provided patterns or recognize new ones
+        if patterns is None:
+            patterns = self.recognize(text)
+            
         analysis = {
             'total_characters': len(text),
             'total_lines': len(text.split('\n')),
             'total_words': len(text.split()),
-            'patterns_found': len(self.recognize(text)),
+            'patterns_found': len(patterns),
             'truth_levels': {},
             'complexity_score': 0
         }
         
-        # Analyze truth levels
-        for truth in self.discovered_truths:
-            level = truth['truth_level']
+        # Analyze truth levels from patterns
+        for pattern in patterns:
+            level = pattern['truth_level']
             analysis['truth_levels'][level] = analysis['truth_levels'].get(level, 0) + 1
             
         # Calculate complexity score
@@ -118,11 +122,11 @@ class UltimateMetaprkmpf:
         The ultimate processing function that combines all capabilities
         of the metaprkmpf system.
         """
-        # Step 1: Recognize patterns
+        # Step 1: Recognize patterns (do this only once)
         patterns = self.recognize(text)
         
-        # Step 2: Perform meta-analysis
-        analysis = self.meta_analyze(text)
+        # Step 2: Perform meta-analysis using the already recognized patterns
+        analysis = self.meta_analyze(text, patterns)
         
         # Step 3: Generate insights
         insights = self._generate_insights(patterns, analysis)
@@ -163,11 +167,10 @@ class UltimateMetaprkmpf:
             
         highest_truth = max(
             patterns,
-            key=lambda p: TruthLevel[p['truth_level']].value,
-            default=None
+            key=lambda p: TruthLevel[p['truth_level']].value
         )
         
-        if highest_truth and TruthLevel[highest_truth['truth_level']] == TruthLevel.ABSOLUTE:
+        if TruthLevel[highest_truth['truth_level']] == TruthLevel.ABSOLUTE:
             return f"Absolute truth discovered: {highest_truth['matched_text']}"
         elif analysis['complexity_score'] > 100:
             return "Truth emerges from complexity"
