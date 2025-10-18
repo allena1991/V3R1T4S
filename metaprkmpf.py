@@ -162,6 +162,7 @@ class UltimateMetaprkmpf:
     def _discover_ultimate_truth(self, patterns: List[Dict[str, Any]], 
                                  analysis: Dict[str, Any]) -> str:
         """Discover the ultimate truth from the analysis"""
+        # Handle empty patterns (empty list is falsy in Python)
         if not patterns:
             return "Truth exists in absence of patterns"
             
